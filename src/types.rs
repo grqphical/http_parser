@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
 
 use crate::errors::{HttpMethodError, HttpVersionError};
 
@@ -34,6 +34,16 @@ impl TryFrom<&str> for HttpVersion {
     }
 
     type Error = HttpVersionError;
+}
+
+impl fmt::Display for HttpVersion {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            HttpVersion::Http1_1 => write!(f, "HTTP/1.1"),
+            HttpVersion::Http2 => write!(f, "HTTP/2"),
+            HttpVersion::Http3 => write!(f, "HTTP/3")
+        }
+    }
 }
 
 /// Represents an HTTP Method used

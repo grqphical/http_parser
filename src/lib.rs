@@ -1,14 +1,18 @@
 //! Easy to use HTTP Parser for Rust
-//! 
+//!
 //! Provides a simple, easy to use API for converting text requests to structs
 pub mod errors;
 pub mod request;
+pub mod response;
 pub mod types;
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::request::HttpRequest;
-    use crate::types::Header;
+    use crate::response::{ResponseBuilder, Response};
+    use crate::types::{Header, HttpVersion};
 
     #[test]
     fn no_body_request() {
@@ -53,5 +57,35 @@ Hello World!";
         ("Accept-Language".to_string(), "en-GB,en;q=0.5".to_string()),
         ("User-Agent".to_string(), "Mozilla/5.0".to_string()),
 ]), contents: vec![72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]})
+    }
+
+    #[test]
+    fn response_builder_test() {
+        let mut header: HashMap<String, String> = HashMap::new();
+        header.insert("Content-Type".to_string(), "*/*".to_string());
+
+        let valid_response = Response::new(HttpVersion::Http1_1, 200, String::from("OK"), header.clone(), String::from("Hello World!"));
+
+        let response = ResponseBuilder::new()
+            .version(HttpVersion::Http1_1)
+            .status(200)
+            .unwrap()
+            .header(header)
+            .body(String::from("Hello World!"))
+            .build();
+
+        assert_eq!(response, valid_response)
+    }
+
+    #[test]
+    fn response_to_string_test() {
+        let mut header: HashMap<String, String> = HashMap::new();
+        header.insert("Content-Type".to_string(), "*/*".to_string());
+
+        let response = Response::new(HttpVersion::Http1_1, 200, String::from("OK"), header.clone(), String::from("Hello World!"));
+
+        let valid_string = String::from("HTTP/1.1 200 OK\nContent-Type: */*\n\nHello World!");
+
+        assert_eq!(response.to_string(), valid_string)
     }
 }
